@@ -1,0 +1,40 @@
+name: terraform-ci
+
+# Runs on every pull request and on every push to main.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+          terraform_wrapper: false
+
+      - name: Format check
+        run: terraform fmt -check -recursive
+
+      - name: Validate module
+        working-directory: module
+        run: |
+          terraform init -backend=false -input=false
+          terraform validate
+
+      - name: Unit tests (mocked, no AWS credentials needed)
+        working-directory: module
+        run: terraform test
+
+      - name: Validate live configs
+        run: |
+          for env in live/dev live/prod; do
+            (cd "$env" && terraform init -backend=false -input=false && terraform validate)
+          done

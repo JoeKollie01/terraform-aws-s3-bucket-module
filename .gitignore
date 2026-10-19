@@ -1,0 +1,13 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+*_override.tf
+
+# Real tfvars can hold account-specific values; commit the .example only
+*.tfvars
+!*.tfvars.example
